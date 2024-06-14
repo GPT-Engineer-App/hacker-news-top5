@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 const HN_API_URL = "https://hacker-news.firebaseio.com/v0";
 
 export const fetchTopStories = async () => {

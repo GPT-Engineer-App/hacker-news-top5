@@ -1,6 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Text, VStack, Box, Link, useColorMode, IconButton, Flex } from "@chakra-ui/react";
-import { FaMoon, FaSun } from "react-icons/fa";
 import { fetchTopStories } from '../utils/newsIntegration';
 
 const Index = () => {
