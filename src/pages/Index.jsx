@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button, Textarea, Select, Menu, MenuButton, MenuList, MenuItem, ChevronDownIcon } from "@chakra-ui/react";
-import { FaMoon, FaSun } from "react-icons/fa";
+import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button, Textarea, Select, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import { FaMoon, FaSun, FaChevronDown as ChevronDownIcon } from "react-icons/fa";
 import axios from 'axios';
 
 const Index = () => {
