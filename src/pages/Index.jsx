@@ -12,22 +12,20 @@ const Index = () => {
   const [newComment, setNewComment] = useState('');
   const [version, setVersion] = useState('');
   const [os, setOs] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const { colorMode, toggleColorMode } = useColorMode();
-
+  const [currentPage, setCurrentPage] = useState(1);
   const storiesPerPage = 10;
-  const totalStories = 50;
 
   useEffect(() => {
     const fetchTopStories = async () => {
       try {
         const topStoriesRes = await axios.get('https://hacker-news.firebaseio.com/v0/topstories.json');
-        const topStoryIds = topStoriesRes.data.slice(0, totalStories);
+        const topStoryIds = topStoriesRes.data.slice(0, 50);
         const storyPromises = topStoryIds.map(id => axios.get(`https://hacker-news.firebaseio.com/v0/item/${id}.json`));
         const storiesRes = await Promise.all(storyPromises);
         const storiesData = storiesRes.map(res => res.data);
         setStories(storiesData);
-        setFilteredStories(storiesData.slice(0, storiesPerPage));
+        setFilteredStories(storiesData);
       } catch (error) {
         console.error('Error fetching top stories:', error);
       }
@@ -41,15 +39,15 @@ const Index = () => {
       story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (story.text && story.text.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-    setFilteredStories(filtered.slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage));
-  }, [searchTerm, stories, currentPage]);
+    setFilteredStories(filtered);
+  }, [searchTerm, stories]);
 
   const handleSpecificQuery = async () => {
     try {
       const specificQueryRes = await axios.get(`https://hacker-news.firebaseio.com/v0/item/${specificQuery}.json`);
       const specificStory = specificQueryRes.data;
       setStories(prevStories => [...prevStories, specificStory]);
-      setFilteredStories(prevStories => [...prevStories, specificStory].slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage));
+      setFilteredStories(prevStories => [...prevStories, specificStory]);
     } catch (error) {
       console.error('Error fetching specific story:', error);
     }
@@ -68,10 +66,11 @@ const Index = () => {
     setOs('');
   };
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-    setFilteredStories(stories.slice((pageNumber - 1) * storiesPerPage, pageNumber * storiesPerPage));
-  };
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const indexOfLastStory = currentPage * storiesPerPage;
+  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
+  const currentStories = filteredStories.slice(indexOfFirstStory, indexOfLastStory);
 
   return (
     <Container centerContent maxW="container.md" py={4}>
@@ -99,7 +98,7 @@ const Index = () => {
         <Button onClick={handleSpecificQuery}>Add to Highscore</Button>
       </Flex>
       <VStack spacing={4} width="100%">
-        {filteredStories.map(story => (
+        {currentStories.map(story => (
           <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
             <Text fontSize="lg" fontWeight="bold">{story.title}</Text>
             <Text>Upvotes: {story.score}</Text>
@@ -134,10 +133,10 @@ const Index = () => {
         ))}
       </VStack>
       <Flex mt={4} justifyContent="center">
-        {Array.from({ length: Math.ceil(totalStories / storiesPerPage) }, (_, index) => (
+        {Array.from({ length: Math.ceil(filteredStories.length / storiesPerPage) }, (_, index) => (
           <Button
             key={index + 1}
-            onClick={() => handlePageChange(index + 1)}
+            onClick={() => paginate(index + 1)}
             mx={1}
             colorScheme={currentPage === index + 1 ? 'teal' : 'gray'}
           >
