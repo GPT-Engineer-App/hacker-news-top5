@@ -17,7 +17,7 @@ const Index = () => {
   const [keywords, setKeywords] = useState([]);
   const [selectedKeyword, setSelectedKeyword] = useState('');
   const { colorMode, toggleColorMode } = useColorMode();
-  const bgGradient = useColorModeValue("linear(to-r, teal.500, green.500)", "linear(to-r, teal.200, blue.500)");
+  const bgGradient = useColorModeValue("linear(to-r, newTheme.500, newTheme.700)", "linear(to-r, newTheme.200, newTheme.500)");
   const boxShadow = useColorModeValue("lg", "dark-lg");
 
   const storiesPerPage = 10;

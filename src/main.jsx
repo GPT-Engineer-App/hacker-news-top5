@@ -9,6 +9,11 @@ const colors = {
     800: "#153e75",
     700: "#2a69ac",
   },
+  newTheme: {
+    900: "#0d3b66",
+    800: "#145da0",
+    700: "#1e81b0",
+  },
 };
 
 const styles = {
