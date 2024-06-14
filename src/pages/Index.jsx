@@ -13,12 +13,14 @@ const Index = () => {
   const [version, setVersion] = useState('');
   const [os, setOs] = useState('');
   const { colorMode, toggleColorMode } = useColorMode();
+  const [currentPage, setCurrentPage] = useState(1);
+  const storiesPerPage = 10;
 
   useEffect(() => {
     const fetchTopStories = async () => {
       try {
         const topStoriesRes = await axios.get('https://hacker-news.firebaseio.com/v0/topstories.json');
-        const topStoryIds = topStoriesRes.data.slice(0, 5);
+        const topStoryIds = topStoriesRes.data.slice(0, 50);
         const storyPromises = topStoryIds.map(id => axios.get(`https://hacker-news.firebaseio.com/v0/item/${id}.json`));
         const storiesRes = await Promise.all(storyPromises);
         const storiesData = storiesRes.map(res => res.data);
@@ -64,6 +66,14 @@ const Index = () => {
     setOs('');
   };
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const indexOfLastStory = currentPage * storiesPerPage;
+  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
+  const currentStories = filteredStories.slice(indexOfFirstStory, indexOfLastStory);
+
   return (
     <Container centerContent maxW="container.md" py={4}>
       <Flex justifyContent="space-between" width="100%" mb={4}>
@@ -90,7 +100,7 @@ const Index = () => {
         <Button onClick={handleSpecificQuery}>Add to Highscore</Button>
       </Flex>
       <VStack spacing={4} width="100%">
-        {filteredStories.map(story => (
+        {currentStories.map(story => (
           <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
             <Text fontSize="lg" fontWeight="bold">{story.title}</Text>
             <Text>Upvotes: {story.score}</Text>
@@ -124,6 +134,11 @@ const Index = () => {
           </Box>
         ))}
       </VStack>
+      <Flex mt={4}>
+        {Array.from({ length: Math.ceil(filteredStories.length / storiesPerPage) }, (_, index) => (
+          <Button key={index + 1} onClick={() => handlePageChange(index + 1)}>{index + 1}</Button>
+        ))}
+      </Flex>
     </Container>
   );
 };
