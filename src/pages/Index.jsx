@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex } from "@chakra-ui/react";
+import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button } from "@chakra-ui/react";
 import { FaMoon, FaSun } from "react-icons/fa";
 import axios from 'axios';
 
@@ -7,6 +7,7 @@ const Index = () => {
   const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [specificQuery, setSpecificQuery] = useState('');
   const { colorMode, toggleColorMode } = useColorMode();
 
   useEffect(() => {
@@ -32,6 +33,17 @@ const Index = () => {
     setFilteredStories(filtered);
   }, [searchTerm, stories]);
 
+  const handleSpecificQuery = async () => {
+    try {
+      const specificQueryRes = await axios.get(`https://hacker-news.firebaseio.com/v0/item/${specificQuery}.json`);
+      const specificStory = specificQueryRes.data;
+      setStories(prevStories => [...prevStories, specificStory]);
+      setFilteredStories(prevStories => [...prevStories, specificStory]);
+    } catch (error) {
+      console.error('Error fetching specific story:', error);
+    }
+  };
+
   return (
     <Container centerContent maxW="container.md" py={4}>
       <Flex justifyContent="space-between" width="100%" mb={4}>
@@ -48,6 +60,15 @@ const Index = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+      <Flex mb={4} width="100%">
+        <Input
+          placeholder="Enter specific query ID..."
+          value={specificQuery}
+          onChange={(e) => setSpecificQuery(e.target.value)}
+          mr={2}
+        />
+        <Button onClick={handleSpecificQuery}>Add to Highscore</Button>
+      </Flex>
       <VStack spacing={4} width="100%">
         {filteredStories.map(story => (
           <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
