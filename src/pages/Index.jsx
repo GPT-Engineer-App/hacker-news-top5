@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button, Textarea, Select, HStack } from "@chakra-ui/react";
+import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button, Textarea, Select, HStack, useColorModeValue } from "@chakra-ui/react";
 import { FaMoon, FaSun } from "react-icons/fa";
 import axios from 'axios';
 
@@ -17,6 +17,8 @@ const Index = () => {
   const [keywords, setKeywords] = useState([]);
   const [selectedKeyword, setSelectedKeyword] = useState('');
   const { colorMode, toggleColorMode } = useColorMode();
+  const bgGradient = useColorModeValue("linear(to-r, teal.500, green.500)", "linear(to-r, teal.200, blue.500)");
+  const boxShadow = useColorModeValue("lg", "dark-lg");
 
   const storiesPerPage = 10;
   const totalStories = 50;
@@ -123,6 +125,8 @@ const Index = () => {
         mb={4}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        bg={bgGradient}
+        boxShadow={boxShadow}
       />
       <Flex mb={4} width="100%">
         <Input
@@ -130,30 +134,32 @@ const Index = () => {
           value={specificQuery}
           onChange={(e) => setSpecificQuery(e.target.value)}
           mr={2}
+          bg={bgGradient}
+          boxShadow={boxShadow}
         />
-        <Button onClick={handleSpecificQuery}>Add to Highscore</Button>
+        <Button onClick={handleSpecificQuery} bg={bgGradient} boxShadow={boxShadow}>Add to Highscore</Button>
       </Flex>
       <HStack mb={4} width="100%">
-        <Select placeholder="Filter by keyword" value={selectedKeyword} onChange={(e) => setSelectedKeyword(e.target.value)}>
+        <Select placeholder="Filter by keyword" value={selectedKeyword} onChange={(e) => setSelectedKeyword(e.target.value)} bg={bgGradient} boxShadow={boxShadow}>
           {keywords.map((keyword, index) => (
             <option key={index} value={keyword}>{keyword}</option>
           ))}
         </Select>
-        <Select placeholder="Sort by" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+        <Select placeholder="Sort by" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} bg={bgGradient} boxShadow={boxShadow}>
           <option value="asc">Ascending</option>
           <option value="desc">Descending</option>
         </Select>
       </HStack>
       <VStack spacing={4} width="100%">
         {filteredStories.map(story => (
-          <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
+          <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%" bg={bgGradient} boxShadow={boxShadow}>
             <Text fontSize="lg" fontWeight="bold">{story.title}</Text>
             <Text>Upvotes: {story.score}</Text>
             <Link href={story.url} color="teal.500" isExternal>Read more</Link>
             <Box mt={4}>
               <Text fontWeight="bold">Comments:</Text>
               {comments[story.id] && comments[story.id].map((comment, index) => (
-                <Box key={index} p={2} borderWidth="1px" borderRadius="md" mt={2}>
+                <Box key={index} p={2} borderWidth="1px" borderRadius="md" mt={2} bg={bgGradient} boxShadow={boxShadow}>
                   <Text>{comment.text}</Text>
                   <Text fontSize="sm" color="gray.500">Version: {comment.version}, OS: {comment.os}</Text>
                 </Box>
@@ -163,18 +169,20 @@ const Index = () => {
                 mt={2}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
+                bg={bgGradient}
+                boxShadow={boxShadow}
               />
-              <Select placeholder="Select version" mt={2} value={version} onChange={(e) => setVersion(e.target.value)}>
+              <Select placeholder="Select version" mt={2} value={version} onChange={(e) => setVersion(e.target.value)} bg={bgGradient} boxShadow={boxShadow}>
                 <option value="1.0">1.0</option>
                 <option value="2.0">2.0</option>
                 <option value="3.0">3.0</option>
               </Select>
-              <Select placeholder="Select OS" mt={2} value={os} onChange={(e) => setOs(e.target.value)}>
+              <Select placeholder="Select OS" mt={2} value={os} onChange={(e) => setOs(e.target.value)} bg={bgGradient} boxShadow={boxShadow}>
                 <option value="Windows">Windows</option>
                 <option value="MacOS">MacOS</option>
                 <option value="Linux">Linux</option>
               </Select>
-              <Button mt={2} onClick={() => handleAddComment(story.id)}>Add Comment</Button>
+              <Button mt={2} onClick={() => handleAddComment(story.id)} bg={bgGradient} boxShadow={boxShadow}>Add Comment</Button>
             </Box>
           </Box>
         ))}
@@ -186,6 +194,8 @@ const Index = () => {
             onClick={() => handlePageChange(index + 1)}
             mx={1}
             colorScheme={currentPage === index + 1 ? 'teal' : 'gray'}
+            bg={bgGradient}
+            boxShadow={boxShadow}
           >
             {index + 1}
           </Button>
