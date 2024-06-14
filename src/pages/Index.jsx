@@ -13,34 +13,41 @@ const Index = () => {
   const [filteredStories, setFilteredStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [context, setContext] = useState('topstories');
+  const [currentPage, setCurrentPage] = useState(1);
+  const storiesPerPage = 20;
+  const totalPages = 3;
   const handleFeedback = (articleId, rating) => {
     submitFeedback(articleId, rating);
   };
   const { colorMode, toggleColorMode } = useColorMode();
 
-  useEffect(() => {
-    const fetchStories = async () => {
-      try {
-        const themes = analyzeQuery(searchTerm);
-        const matchedThemes = identifyThemes(themes);
-        const articles = await fetchNews(matchedThemes);
-        const sortedArticles = scoreAndSortArticles(articles, searchTerm);
-        const metaContextArticles = provideMetaContext(sortedArticles);
-        const stories = metaContextArticles;
-        setStories(stories);
-        setFilteredStories(stories);
-      } catch (error) {
-        console.error('Error fetching stories:', error);
-      }
-    };
+  const fetchStories = async () => {
+    try {
+      const themes = analyzeQuery(searchTerm);
+      const matchedThemes = identifyThemes(themes);
+      const articles = await fetchNews(matchedThemes);
+      const sortedArticles = scoreAndSortArticles(articles, searchTerm);
+      const metaContextArticles = provideMetaContext(sortedArticles);
+      const stories = metaContextArticles.slice(0, storiesPerPage * totalPages);
+      setStories(stories);
+      setFilteredStories(stories.slice(0, storiesPerPage));
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchStories();
   }, [context, searchTerm]);
 
   useEffect(() => {
     const filtered = stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase()));
-    setFilteredStories(filtered);
-  }, [searchTerm, stories]);
+    setFilteredStories(filtered.slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage));
+  }, [searchTerm, stories, currentPage]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <Container centerContent maxW="container.md" py={4}>
@@ -74,6 +81,13 @@ const Index = () => {
           </Box>
         ))}
       </VStack>
+      <Flex justifyContent="center" mt={4}>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <Button key={i + 1} onClick={() => handlePageChange(i + 1)} isDisabled={currentPage === i + 1} mx={1}>
+            {i + 1}
+          </Button>
+        ))}
+      </Flex>
     </Container>
   );
 };
