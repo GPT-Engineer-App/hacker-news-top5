@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button, Textarea, Select } from "@chakra-ui/react";
+import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button, Textarea, Select, HStack } from "@chakra-ui/react";
 import { FaMoon, FaSun } from "react-icons/fa";
 import axios from 'axios';
 
@@ -13,6 +13,9 @@ const Index = () => {
   const [version, setVersion] = useState('');
   const [os, setOs] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [keywords, setKeywords] = useState([]);
+  const [selectedKeyword, setSelectedKeyword] = useState('');
   const { colorMode, toggleColorMode } = useColorMode();
 
   const storiesPerPage = 10;
@@ -28,6 +31,7 @@ const Index = () => {
         const storiesData = storiesRes.map(res => res.data);
         setStories(storiesData);
         setFilteredStories(storiesData.slice(0, storiesPerPage));
+        extractKeywords(storiesData);
       } catch (error) {
         console.error('Error fetching top stories:', error);
       }
@@ -37,12 +41,26 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = stories.filter(story => 
+    let filtered = stories.filter(story => 
       story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (story.text && story.text.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+
+    if (selectedKeyword) {
+      filtered = filtered.filter(story => 
+        story.title.toLowerCase().includes(selectedKeyword.toLowerCase()) ||
+        (story.text && story.text.toLowerCase().includes(selectedKeyword.toLowerCase()))
+      );
+    }
+
+    if (sortOrder === 'asc') {
+      filtered.sort((a, b) => a.score - b.score);
+    } else {
+      filtered.sort((a, b) => b.score - a.score);
+    }
+
     setFilteredStories(filtered.slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage));
-  }, [searchTerm, stories, currentPage]);
+  }, [searchTerm, stories, currentPage, sortOrder, selectedKeyword]);
 
   const handleSpecificQuery = async () => {
     try {
@@ -73,6 +91,23 @@ const Index = () => {
     setFilteredStories(stories.slice((pageNumber - 1) * storiesPerPage, pageNumber * storiesPerPage));
   };
 
+  const extractKeywords = (stories) => {
+    const keywordMap = {};
+    stories.forEach(story => {
+      const words = story.title.split(' ');
+      words.forEach(word => {
+        const lowerWord = word.toLowerCase();
+        if (keywordMap[lowerWord]) {
+          keywordMap[lowerWord]++;
+        } else {
+          keywordMap[lowerWord] = 1;
+        }
+      });
+    });
+    const sortedKeywords = Object.keys(keywordMap).sort((a, b) => keywordMap[b] - keywordMap[a]);
+    setKeywords(sortedKeywords.slice(0, 10));
+  };
+
   return (
     <Container centerContent maxW="container.md" py={4}>
       <Flex justifyContent="space-between" width="100%" mb={4}>
@@ -98,6 +133,17 @@ const Index = () => {
         />
         <Button onClick={handleSpecificQuery}>Add to Highscore</Button>
       </Flex>
+      <HStack mb={4} width="100%">
+        <Select placeholder="Filter by keyword" value={selectedKeyword} onChange={(e) => setSelectedKeyword(e.target.value)}>
+          {keywords.map((keyword, index) => (
+            <option key={index} value={keyword}>{keyword}</option>
+          ))}
+        </Select>
+        <Select placeholder="Sort by" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </Select>
+      </HStack>
       <VStack spacing={4} width="100%">
         {filteredStories.map(story => (
           <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
