@@ -7,15 +7,21 @@ import { fetchNews } from '../utils/newsIntegration';
 import { scoreAndSortArticles } from '../utils/relevanceScoring';
 import { provideMetaContext } from '../utils/metaContextualLayer';
 import { submitFeedback } from '../utils/userFeedback';
+import Pagination from '../components/Pagination';
 
 const Index = () => {
   const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [context, setContext] = useState('topstories');
+  const [currentPage, setCurrentPage] = useState(1);
+  const storiesPerPage = 20;
+  const totalStories = 60;
+
   const handleFeedback = (articleId, rating) => {
     submitFeedback(articleId, rating);
   };
+
   const { colorMode, toggleColorMode } = useColorMode();
 
   useEffect(() => {
@@ -26,9 +32,9 @@ const Index = () => {
         const articles = await fetchNews(matchedThemes);
         const sortedArticles = scoreAndSortArticles(articles, searchTerm);
         const metaContextArticles = provideMetaContext(sortedArticles);
-        const stories = metaContextArticles;
+        const stories = metaContextArticles.slice(0, totalStories);
         setStories(stories);
-        setFilteredStories(stories);
+        setFilteredStories(stories.slice(0, storiesPerPage));
       } catch (error) {
         console.error('Error fetching stories:', error);
       }
@@ -39,8 +45,8 @@ const Index = () => {
 
   useEffect(() => {
     const filtered = stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase()));
-    setFilteredStories(filtered);
-  }, [searchTerm, stories]);
+    setFilteredStories(filtered.slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage));
+  }, [searchTerm, stories, currentPage]);
 
   return (
     <Container centerContent maxW="container.md" py={4}>
@@ -74,6 +80,11 @@ const Index = () => {
           </Box>
         ))}
       </VStack>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(totalStories / storiesPerPage)}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </Container>
   );
 };
