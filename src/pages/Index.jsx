@@ -33,7 +33,10 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filtered = stories.filter(story => 
+      story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (story.text && story.text.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
     setFilteredStories(filtered);
   }, [searchTerm, stories]);
 
