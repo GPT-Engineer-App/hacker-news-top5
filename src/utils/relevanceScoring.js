@@ -1,4 +1,4 @@
-export const scoreAndSortArticles = (articles, query) => {
+export const scoreAndSortArticles = (articles, query, sortCriteria) => {
   const score = (article) => {
     let score = 0;
     query.split(' ').forEach(word => {
@@ -9,5 +9,11 @@ export const scoreAndSortArticles = (articles, query) => {
     return score;
   };
 
-  return articles.sort((a, b) => score(b) - score(a));
+  const sortFunctions = {
+    date: (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt),
+    relevance: (a, b) => score(b) - score(a),
+    popularity: (a, b) => b.score - a.score,
+  };
+
+  return articles.sort(sortFunctions[sortCriteria]);
 };
