@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button, Textarea, Select } from "@chakra-ui/react";
+import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Button, Textarea, Select, Menu, MenuButton, MenuList, MenuItem, ChevronDownIcon } from "@chakra-ui/react";
 import { FaMoon, FaSun } from "react-icons/fa";
 import axios from 'axios';
 
@@ -13,10 +13,13 @@ const Index = () => {
   const [version, setVersion] = useState('');
   const [os, setOs] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedKeyword, setSelectedKeyword] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
   const { colorMode, toggleColorMode } = useColorMode();
 
   const storiesPerPage = 10;
   const totalStories = 50;
+  const keywords = ['React', 'JavaScript', 'Web Development', 'Programming', 'Tech News'];
 
   useEffect(() => {
     const fetchTopStories = async () => {
@@ -38,11 +41,13 @@ const Index = () => {
 
   useEffect(() => {
     const filtered = stories.filter(story => 
-      story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (story.text && story.text.toLowerCase().includes(searchTerm.toLowerCase()))
+      (story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (story.text && story.text.toLowerCase().includes(searchTerm.toLowerCase()))) &&
+      (selectedKeyword === '' || story.title.toLowerCase().includes(selectedKeyword.toLowerCase()) || 
+      (story.text && story.text.toLowerCase().includes(selectedKeyword.toLowerCase())))
     );
     setFilteredStories(filtered.slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage));
-  }, [searchTerm, stories, currentPage]);
+  }, [searchTerm, stories, currentPage, selectedKeyword]);
 
   const handleSpecificQuery = async () => {
     try {
@@ -70,7 +75,35 @@ const Index = () => {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    setFilteredStories(stories.slice((pageNumber - 1) * storiesPerPage, pageNumber * storiesPerPage));
+    const sortedStories = [...stories].sort((a, b) => {
+      if (sortOrder === 'asc') {
+        return a.score - b.score;
+      } else {
+        return b.score - a.score;
+      }
+    });
+    setFilteredStories(sortedStories.slice((pageNumber - 1) * storiesPerPage, pageNumber * storiesPerPage));
+  };
+
+  const handleKeywordSelect = (keyword) => {
+    setSelectedKeyword(keyword);
+    const filtered = stories.filter(story => 
+      story.title.toLowerCase().includes(keyword.toLowerCase()) ||
+      (story.text && story.text.toLowerCase().includes(keyword.toLowerCase()))
+    );
+    setFilteredStories(filtered.slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage));
+  };
+
+  const handleSortOrderChange = (order) => {
+    setSortOrder(order);
+    const sortedStories = [...filteredStories].sort((a, b) => {
+      if (order === 'asc') {
+        return a.score - b.score;
+      } else {
+        return b.score - a.score;
+      }
+    });
+    setFilteredStories(sortedStories);
   };
 
   return (
@@ -89,6 +122,29 @@ const Index = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+      <Flex mb={4} width="100%" justifyContent="space-between">
+        <Menu>
+          <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+            Filter by Keyword
+          </MenuButton>
+          <MenuList>
+            {keywords.map((keyword, index) => (
+              <MenuItem key={index} onClick={() => handleKeywordSelect(keyword)}>
+                {keyword}
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Menu>
+        <Menu>
+          <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+            Sort by Score
+          </MenuButton>
+          <MenuList>
+            <MenuItem onClick={() => handleSortOrderChange('asc')}>Ascending</MenuItem>
+            <MenuItem onClick={() => handleSortOrderChange('desc')}>Descending</MenuItem>
+          </MenuList>
+        </Menu>
+      </Flex>
       <Flex mb={4} width="100%">
         <Input
           placeholder="Enter specific query ID..."
