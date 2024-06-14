@@ -13,6 +13,7 @@ const Index = () => {
   const [filteredStories, setFilteredStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [context, setContext] = useState('topstories');
+  const [sortCriteria, setSortCriteria] = useState('date');
   const handleFeedback = (articleId, rating) => {
     submitFeedback(articleId, rating);
   };
@@ -24,7 +25,7 @@ const Index = () => {
         const themes = analyzeQuery(searchTerm);
         const matchedThemes = identifyThemes(themes);
         const articles = await fetchNews(matchedThemes);
-        const sortedArticles = scoreAndSortArticles(articles, searchTerm);
+        const sortedArticles = scoreAndSortArticles(articles, searchTerm, sortCriteria);
         const metaContextArticles = provideMetaContext(sortedArticles);
         const stories = metaContextArticles;
         setStories(stories);
@@ -35,7 +36,7 @@ const Index = () => {
     };
 
     fetchStories();
-  }, [context, searchTerm]);
+  }, [context, searchTerm, sortCriteria]);
 
   useEffect(() => {
     const filtered = stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -49,6 +50,11 @@ const Index = () => {
           <option value="topstories">Top Stories</option>
           <option value="newstories">New Stories</option>
           <option value="beststories">Best Stories</option>
+        </Select>
+        <Select value={sortCriteria} onChange={(e) => setSortCriteria(e.target.value)} width="auto">
+          <option value="date">Date</option>
+          <option value="relevance">Relevance</option>
+          <option value="popularity">Popularity</option>
         </Select>
         <IconButton
           aria-label="Toggle dark mode"
