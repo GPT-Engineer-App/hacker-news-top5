@@ -15,3 +15,19 @@ export const identifyThemes = (themes) => {
   });
   return matchedThemes;
 };
+
+// Test function for contextual theme identification
+export const testIdentifyThemes = () => {
+  const testThemes = [
+    ["mental health", "fitness"],
+    ["educational technology", "collaborative learning"],
+    ["sustainability", "climate action"]
+  ];
+
+  testThemes.forEach(themes => {
+    const matchedThemes = identifyThemes(themes);
+    console.log(`Themes: ${themes.join(", ")} - Matched Themes:`, matchedThemes);
+  });
+};
+
+testIdentifyThemes();

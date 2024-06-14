@@ -15,3 +15,12 @@ export const fetchNews = async (themes) => {
   }
   return articles;
 };
+
+// Test function for news source integration
+export const testFetchNews = async () => {
+  const testThemes = ["mental health", "climate action", "educational technology"];
+  const articles = await fetchNews(testThemes);
+  console.log(`Fetched ${articles.length} articles for themes: ${testThemes.join(", ")}`);
+};
+
+testFetchNews();
