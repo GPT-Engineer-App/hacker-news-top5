@@ -7,7 +7,7 @@ const Index = () => {
   const [stories, setStories] = useState([]);
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [context, setContext] = useState('topstories');
+  
   const [currentPage, setCurrentPage] = useState(1);
   const storiesPerPage = 5;
   const { colorMode, toggleColorMode } = useColorMode();
@@ -24,6 +24,8 @@ const Index = () => {
   useEffect(() => {
     fetchStories();
   }, []);
+
+  const filteredStories = stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <Container centerContent maxW="container.md" py={4}>
@@ -42,7 +44,7 @@ const Index = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
       />
       <VStack spacing={4} width="100%" overflowY="auto" maxHeight="60vh">
-        {stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase())).slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage).map(story => (
+        {filteredStories.slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage).map(story => (
           <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
             <Text fontSize="lg" fontWeight="bold">{story.title}</Text>
             <Text>Upvotes: {story.score}</Text>
@@ -51,7 +53,7 @@ const Index = () => {
         ))}
       </VStack>
       <Flex justifyContent="center" mt={4}>
-        {Array.from({ length: Math.ceil(stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase())).length / storiesPerPage) }, (_, i) => (
+        {Array.from({ length: Math.ceil(filteredStories.length / storiesPerPage) }, (_, i) => (
           <Button key={i + 1} onClick={() => setCurrentPage(i + 1)} isDisabled={currentPage === i + 1} mx={1}>
             {i + 1}
           </Button>
