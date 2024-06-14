@@ -13,17 +13,19 @@ const Index = () => {
   const [version, setVersion] = useState('');
   const [os, setOs] = useState('');
   const { colorMode, toggleColorMode } = useColorMode();
+  const [currentPage, setCurrentPage] = useState(1);
+  const storiesPerPage = 10;
 
   useEffect(() => {
     const fetchTopStories = async () => {
       try {
         const topStoriesRes = await axios.get('https://hacker-news.firebaseio.com/v0/topstories.json');
-        const topStoryIds = topStoriesRes.data.slice(0, 5);
+        const topStoryIds = topStoriesRes.data.slice(0, 50); // Fetch 50 stories
         const storyPromises = topStoryIds.map(id => axios.get(`https://hacker-news.firebaseio.com/v0/item/${id}.json`));
         const storiesRes = await Promise.all(storyPromises);
         const storiesData = storiesRes.map(res => res.data);
         setStories(storiesData);
-        setFilteredStories(storiesData);
+        setFilteredStories(storiesData.slice(0, 10)); // Display first 10 stories initially
       } catch (error) {
         console.error('Error fetching top stories:', error);
       }
@@ -37,7 +39,8 @@ const Index = () => {
       story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (story.text && story.text.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-    setFilteredStories(filtered);
+    setFilteredStories(filtered.slice(0, 10));
+    setCurrentPage(1);
   }, [searchTerm, stories]);
 
   const handleSpecificQuery = async () => {
@@ -45,7 +48,7 @@ const Index = () => {
       const specificQueryRes = await axios.get(`https://hacker-news.firebaseio.com/v0/item/${specificQuery}.json`);
       const specificStory = specificQueryRes.data;
       setStories(prevStories => [...prevStories, specificStory]);
-      setFilteredStories(prevStories => [...prevStories, specificStory]);
+      setFilteredStories(prevStories => [...prevStories, specificStory].slice(0, 10));
     } catch (error) {
       console.error('Error fetching specific story:', error);
     }
@@ -62,6 +65,13 @@ const Index = () => {
     setNewComment('');
     setVersion('');
     setOs('');
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    const startIndex = (pageNumber - 1) * storiesPerPage;
+    const endIndex = startIndex + storiesPerPage;
+    setFilteredStories(stories.slice(startIndex, endIndex));
   };
 
   return (
@@ -124,6 +134,18 @@ const Index = () => {
           </Box>
         ))}
       </VStack>
+      <Box mt={4}>
+        {Array.from({ length: Math.ceil(stories.length / storiesPerPage) }, (_, index) => (
+          <Button
+            key={index + 1}
+            onClick={() => handlePageChange(index + 1)}
+            isDisabled={currentPage === index + 1}
+            mx={1}
+          >
+            {index + 1}
+          </Button>
+        ))}
+      </Box>
     </Container>
   );
 };
