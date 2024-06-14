@@ -34,7 +34,7 @@ const Index = () => {
           <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
             <Text fontSize="lg" fontWeight="bold">{story.title}</Text>
             <Text>Upvotes: {story.score}</Text>
-            <Link href={story.url} color="teal.500" isExternal>Read more</Link>
+            <Link href={story.url} color="blue.500" isExternal>Read more</Link>
           </Box>
         ))}
       </VStack>
