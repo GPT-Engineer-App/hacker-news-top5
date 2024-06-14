@@ -5,11 +5,10 @@ import { fetchTopStories } from '../utils/hackerNewsIntegration';
 
 const Index = () => {
   const [stories, setStories] = useState([]);
-  
   const [searchTerm, setSearchTerm] = useState('');
-  
   const [currentPage, setCurrentPage] = useState(1);
   const storiesPerPage = 5;
+
   const { colorMode, toggleColorMode } = useColorMode();
 
   const fetchStories = async () => {
@@ -30,7 +29,6 @@ const Index = () => {
   return (
     <Container centerContent maxW="container.md" py={4}>
       <Flex justifyContent="space-between" width="100%" mb={4}>
-        
         <IconButton
           aria-label="Toggle dark mode"
           icon={colorMode === 'light' ? <FaMoon /> : <FaSun />}
