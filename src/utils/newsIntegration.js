@@ -1,17 +1,22 @@
-import axios from 'axios';
+import fetch from 'node-fetch';
 
-const NEWS_API_URL = "https://newsapi.org/v2/everything";
-const API_KEY = "YOUR_API_KEY";
+const HN_API_URL = "https://hacker-news.firebaseio.com/v0";
 
-export const fetchNews = async (themes) => {
-  const articles = [];
-  for (const theme of themes) {
-    const params = {
-      q: theme,
-      apiKey: API_KEY
-    };
-    const response = await axios.get(NEWS_API_URL, { params });
-    articles.push(...response.data.articles);
+export const fetchTopStories = async () => {
+  try {
+    const response = await fetch(`${HN_API_URL}/topstories.json`);
+    const storyIds = await response.json();
+    const top5StoryIds = storyIds.slice(0, 5);
+
+    const storyPromises = top5StoryIds.map(async (id) => {
+      const storyResponse = await fetch(`${HN_API_URL}/item/${id}.json`);
+      return await storyResponse.json();
+    });
+
+    const stories = await Promise.all(storyPromises);
+    return stories;
+  } catch (error) {
+    console.error('Error fetching top stories:', error);
+    return [];
   }
-  return articles;
 };
