@@ -1,53 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Select, Button } from "@chakra-ui/react";
+import { Container, Text, VStack, Box, Link, Input, useColorMode, IconButton, Flex, Select } from "@chakra-ui/react";
 import { FaMoon, FaSun } from "react-icons/fa";
-import { analyzeQuery } from '../utils/queryAnalysis';
-import { identifyThemes } from '../utils/themeIdentification';
-import { fetchNews } from '../utils/newsIntegration';
-import { scoreAndSortArticles } from '../utils/relevanceScoring';
-import { provideMetaContext } from '../utils/metaContextualLayer';
-import { submitFeedback } from '../utils/userFeedback';
+import axios from 'axios';
 
 const Index = () => {
   const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [context, setContext] = useState('topstories');
-  const [currentPage, setCurrentPage] = useState(1);
-  const storiesPerPage = 20;
-  const totalPages = 3;
-  const handleFeedback = (articleId, rating) => {
-    submitFeedback(articleId, rating);
-  };
   const { colorMode, toggleColorMode } = useColorMode();
 
-  const fetchStories = async () => {
-    try {
-      const themes = analyzeQuery(searchTerm);
-      const matchedThemes = identifyThemes(themes);
-      const articles = await fetchNews(matchedThemes);
-      const sortedArticles = scoreAndSortArticles(articles, searchTerm);
-      const metaContextArticles = provideMetaContext(sortedArticles);
-      const stories = metaContextArticles.slice(0, storiesPerPage * totalPages);
-      setStories(stories);
-      setFilteredStories(stories.slice(0, storiesPerPage));
-    } catch (error) {
-      console.error('Error fetching stories:', error);
-    }
-  };
-
   useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const storiesRes = await axios.get(`https://hacker-news.firebaseio.com/v0/${context}.json`);
+        const storyIds = storiesRes.data.slice(0, 5);
+        const storyPromises = storyIds.map(id => axios.get(`https://hacker-news.firebaseio.com/v0/item/${id}.json`));
+        const storiesData = await Promise.all(storyPromises);
+        const stories = storiesData.map(res => res.data);
+        setStories(stories);
+        setFilteredStories(stories);
+      } catch (error) {
+        console.error('Error fetching stories:', error);
+      }
+    };
+
     fetchStories();
-  }, [context, searchTerm]);
+  }, [context]);
 
   useEffect(() => {
     const filtered = stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase()));
-    setFilteredStories(filtered.slice((currentPage - 1) * storiesPerPage, currentPage * storiesPerPage));
-  }, [searchTerm, stories, currentPage]);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    setFilteredStories(filtered);
+  }, [searchTerm, stories]);
 
   return (
     <Container centerContent maxW="container.md" py={4}>
@@ -74,20 +58,10 @@ const Index = () => {
           <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
             <Text fontSize="lg" fontWeight="bold">{story.title}</Text>
             <Text>Upvotes: {story.score}</Text>
-            <Text>{story.summary}</Text>
             <Link href={story.url} color="teal.500" isExternal>Read more</Link>
-            <Button onClick={() => handleFeedback(story.id, 1)}>👍</Button>
-            <Button onClick={() => handleFeedback(story.id, -1)}>👎</Button>
           </Box>
         ))}
       </VStack>
-      <Flex justifyContent="center" mt={4}>
-        {Array.from({ length: totalPages }, (_, i) => (
-          <Button key={i + 1} onClick={() => handlePageChange(i + 1)} isDisabled={currentPage === i + 1} mx={1}>
-            {i + 1}
-          </Button>
-        ))}
-      </Flex>
     </Container>
   );
 };
