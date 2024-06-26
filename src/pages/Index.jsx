@@ -40,7 +40,8 @@ const Index = () => {
       try {
         // Replace with actual API endpoint for trending topics
         const trendingRes = await axios.get('https://api.example.com/trending-topics');
-        setTrendingTopics(trendingRes.data);
+        const topTrendingTopics = trendingRes.data.slice(0, 10); // Get top 10 trending topics
+        setTrendingTopics(topTrendingTopics);
       } catch (error) {
         console.error('Error fetching trending topics:', error);
       }
