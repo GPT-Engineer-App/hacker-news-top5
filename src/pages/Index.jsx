@@ -8,6 +8,8 @@ const Index = () => {
   const [filteredStories, setFilteredStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [context, setContext] = useState('topstories');
+  const [trendingTopics, setTrendingTopics] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState('');
   const { colorMode, toggleColorMode } = useColorMode();
 
   useEffect(() => {
@@ -33,6 +35,29 @@ const Index = () => {
     setFilteredStories(filtered);
   }, [searchTerm, stories]);
 
+  useEffect(() => {
+    const fetchTrendingTopics = async () => {
+      try {
+        // Replace with actual API endpoint for trending topics
+        const trendingRes = await axios.get('https://api.example.com/trending-topics');
+        setTrendingTopics(trendingRes.data);
+      } catch (error) {
+        console.error('Error fetching trending topics:', error);
+      }
+    };
+
+    fetchTrendingTopics();
+  }, []);
+
+  useEffect(() => {
+    if (selectedTopic) {
+      const filtered = stories.filter(story => story.title.toLowerCase().includes(selectedTopic.toLowerCase()));
+      setFilteredStories(filtered);
+    } else {
+      setFilteredStories(stories);
+    }
+  }, [selectedTopic, stories]);
+
   return (
     <Container centerContent maxW="container.md" py={4}>
       <Flex justifyContent="space-between" width="100%" mb={4}>
@@ -53,6 +78,11 @@ const Index = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+      <Select placeholder="Filter by trending topic" mb={4} value={selectedTopic} onChange={(e) => setSelectedTopic(e.target.value)}>
+        {trendingTopics.map(topic => (
+          <option key={topic} value={topic}>{topic}</option>
+        ))}
+      </Select>
       <VStack spacing={4} width="100%">
         {filteredStories.map(story => (
           <Box key={story.id} p={4} borderWidth="1px" borderRadius="md" width="100%">
